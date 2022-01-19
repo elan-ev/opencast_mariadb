@@ -1,0 +1,117 @@
+---
+
+- name: check if passwords are specified
+  assert:
+    that:
+      - database_password is truthy
+      - database_root_password is truthy
+
+- name: install MariaDB on RedHat Systems
+  dnf:
+    name:
+      - mariadb-server
+      - mariadb
+      - python3-PyMySQL
+
+- name: create systemd configuration directory
+  file:
+    path: /etc/systemd/system/mariadb.service.d/
+    state: directory
+    mode: '0755'
+
+- name: limit number of open files
+  copy:
+    content: |
+      [Service]
+      LimitNOFILE=10000
+    dest: /etc/systemd/system/mariadb.service.d/limits.conf
+    mode: '0644'
+  register: reload_systemd_daemon
+  notify: restart MariaDB
+
+- name: reload systemd daemon  # noqa no-handler
+  systemd:
+    daemon_reload: true
+  when: reload_systemd_daemon is changed
+
+- name: configure mariadb
+  ini_file:
+    dest: /etc/my.cnf.d/opencast.cnf
+    section: mysqld
+    option: '{{ item.key }}'
+    value: '{{ item.value }}'
+    owner: root
+    group: root
+    mode: '0644'
+    state: present
+  loop:
+    - key: max_connections
+      value: '512'
+    - key: character_set_server
+      value: utf8mb4
+    - key: bind-address
+      value: '*'
+  notify: restart MariaDB
+
+- name: start MariaDB
+  service:
+    name: mariadb
+    state: started
+    enabled: true
+
+- name: wait for MariaDB port to become available
+  wait_for:
+    port: 3306
+    delay: 1
+
+- name: set MariaDB root user password
+  mysql_user:
+    name: '{{ database_root_user }}'
+    password: '{{ database_root_password }}'
+    login_user: '{{ database_root_user }}'
+    login_password: '{{ database_root_password }}'
+    check_implicit_admin: true
+    state: present
+
+- name: create Opencast database user
+  mysql_user:
+    name: '{{ database_user_name }}'
+    password: '{{ database_password }}'
+    host: '%'
+    priv: '{{ database_name }}.*:ALL,GRANT'
+    login_user: '{{ database_root_user }}'
+    login_password: '{{ database_root_password }}'
+
+- name: create Opencast database
+  mysql_db:
+    name: '{{ database_name }}'
+    encoding: utf8mb4
+    state: present
+    login_user: '{{ database_root_user }}'
+    login_password: '{{ database_root_password }}'
+
+
+## configuration steps to mimic what 'mysql_secure_installation' does:
+
+- name: delete anonymous user
+  mysql_user:
+    user: ''
+    host: '{{ item }}'
+    state: absent
+    login_user: '{{ database_root_user }}'
+    login_password: '{{ database_root_password }}'
+  loop:
+    - 'localhost'
+    - '{{ ansible_fqdn }}'
+
+- name: ensure root user can only connect from the local machine
+  mysql_user:
+    user: '{{ database_root_user }}'
+    password: '{{ database_root_password }}'
+    host: '{{ item }}'
+    login_user: '{{ database_root_user }}'
+    login_password: '{{ database_root_password }}'
+  loop:
+    - '::1'
+    - 'localhost'
+    - '{{ ansible_fqdn }}'

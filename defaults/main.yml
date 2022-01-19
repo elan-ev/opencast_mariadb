@@ -1,0 +1,17 @@
+---
+
+# opencast database name
+database_name: opencast
+
+# opencast database user credentials & privileges
+database_user_name: opencast
+database_password: ''
+# NOTE: You can limit the granted privileges further
+# if you want to. The rights granted here are
+# sufficient to run Opencast
+# (see https://docs.opencast.org/develop/admin/#configuration/database/#mariadb):
+# database_user_privileges: 'SELECT,INSERT,UPDATE,DELETE,CREATE,ALTER,DROP,INDEX,TRIGGER,CREATE TEMPORARY TABLES,REFERENCES'
+
+# mariadb root user credentials
+database_root_user: root
+database_root_password: ''

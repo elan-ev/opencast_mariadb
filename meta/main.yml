@@ -1,0 +1,15 @@
+---
+
+galaxy_info:
+  role_name: opencast_mariadb
+  namespace: elan
+  author: Timo Nogueira Brockmeyer
+  description: Install MariaDB for Opencast.
+  company: virtUOS
+  license: BSD-3-Clause
+  min_ansible_version: 2.09
+  platforms:
+    - name: EL
+      version:
+        - 8
+dependencies: []

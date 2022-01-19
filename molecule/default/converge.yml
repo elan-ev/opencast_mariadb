@@ -1,0 +1,11 @@
+---
+- name: converge
+  hosts: all
+  become: true
+  tasks:
+    - name: include opencast_mariadb
+      include_role:
+        name: opencast_mariadb
+      vars:
+        - database_password: '1234'
+        - database_root_password: '5678'

@@ -19,6 +19,10 @@ and the database root user (`database_root_password`).
 Further config options are optional.
 Have a look at the [defaults](defaults/main.yml) to see all variables.
 
+_Note_: This role grants `ALL` privilges to the opencast user.
+If you are looking for a more conservative configuration, see the
+(official Opencast docs)[https://docs.opencast.org/develop/admin/#configuration/database/#mariadb] about that.
+
 ## Example Playbook
 
 Just add the role to your playbook:
