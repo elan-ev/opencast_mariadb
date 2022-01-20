@@ -5,8 +5,8 @@ driver:
   name: podman
 platforms:
   - name: oc_mariadb_centos_8
-    image: docker.io/pycontribs/centos:8
-    pre_build_image: true
+    image: quay.io/centos/centos:stream8
+    pre_build_image: false
     command: /sbin/init
     tmpfs:
       - /run

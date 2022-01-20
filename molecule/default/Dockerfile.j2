@@ -1,8 +1,4 @@
-{% if item.registry is defined %}
-FROM {{ item.registry.url }}/{{ item.image }}
-{% else %}
 FROM {{ item.image }}
-{% endif %}
 
 # Install dependencies
-RUN apt-get update && apt-get install -y python sudo bash ca-certificates iproute2 init && apt-get clean
+RUN dnf upgrade -y && dnf install -y sudo systemd bash ca-certificates iproute python39 python3-libselinux
