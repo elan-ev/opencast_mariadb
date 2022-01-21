@@ -1,0 +1,10 @@
+---
+
+# opencast database name
+database_name: opencast
+
+# opencast database user
+database_user_name: opencast
+
+# mariadb root user
+database_root_user: root
