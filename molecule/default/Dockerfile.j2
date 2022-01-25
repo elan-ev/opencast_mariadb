@@ -1,4 +1,4 @@
 FROM {{ item.image }}
 
 # Install dependencies
-RUN dnf upgrade -y && dnf install -y sudo systemd bash ca-certificates iproute python39 python3-libselinux
+RUN dnf install --refresh -y sudo systemd bash ca-certificates iproute python39 python3-libselinux
