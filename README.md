@@ -16,6 +16,8 @@ ansible-galaxy collection install community.mysql
 
 You have to specify passwords for the opencast user that accesses the database (`database_password`)
 and the database root user (`database_root_password`).
+Note that once you set the password for the root user, you can _not_ change it again with this role.
+
 Further config options are optional.
 Have a look at the [defaults](defaults/main.yml) to see all variables.
 

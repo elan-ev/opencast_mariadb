@@ -55,11 +55,6 @@
     state: started
     enabled: true
 
-# - name: wait for MariaDB port to become available
-#   wait_for:
-#     port: 3306
-#     delay: 1
-
 - name: set MariaDB root user password
   mysql_user:
     name: '{{ database_root_user }}'
@@ -67,7 +62,6 @@
     login_user: '{{ database_root_user }}'
     login_password: '{{ database_root_password }}'
     check_implicit_admin: true
-    state: present
 
 - name: create Opencast database user
   mysql_user:
