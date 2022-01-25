@@ -40,7 +40,9 @@
     state: present
   loop:
     - key: max_connections
-      value: '512'
+      value: '{{ opencast_mariadb_max_connections }}'
+    - key: innodb_buffer_pool_size
+      value: '{{ opencast_mariadb_innodb_buffer_pool_size }}'
     - key: character_set_server
       value: utf8mb4
     - key: bind-address
