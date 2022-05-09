@@ -1,0 +1,66 @@
+---
+
+- name: Install MariaDB on Debian Systems
+  package:
+    name:
+      - mariadb-server
+      - mariadb-client
+      - python3-pymysql
+  when: ansible_os_family == 'Debian'
+
+- name: create systemd configuration directory
+  file:
+    path: /etc/systemd/system/mariadb.service.d/
+    state: directory
+    mode: '0755'
+
+- name: limit number of open files
+  copy:
+    content: |
+      [Service]
+      LimitNOFILE=10000
+    dest: /etc/systemd/system/mariadb.service.d/limits.conf
+    mode: '0644'
+  register: reload_systemd_daemon
+  notify: restart MariaDB
+
+- name: reload systemd daemon  # noqa no-handler
+  systemd:
+    daemon_reload: true
+  when: reload_systemd_daemon is changed
+
+- name: configure mariadb
+  ini_file:
+    dest: /etc/mysql/mariadb.conf.d/50-server.cnf
+    section: mysqld
+    option: '{{ item.key }}'
+    value: '{{ item.value }}'
+    owner: root
+    group: root
+    mode: '0644'
+    state: present
+  loop:
+    - key: max_connections
+      value: '{{ opencast_mariadb_max_connections }}'
+    - key: innodb_buffer_pool_size
+      value: '{{ opencast_mariadb_innodb_buffer_pool_size }}'
+    - key: character_set_server
+      value: utf8mb4
+    - key: bind-address
+      value: '0.0.0.0'
+  notify: restart MariaDB
+
+- name: start MariaDB
+  service:
+    name: mariadb
+    state: started
+    enabled: true
+
+- name: set MariaDB root user password for Debian
+  mysql_user:
+    name: '{{ database_root_user }}'
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+    password: '{{ database_root_password }}'
+    login_user: '{{ database_root_user }}'
+    login_password: '{{ database_root_password }}'
+    check_implicit_admin: true
