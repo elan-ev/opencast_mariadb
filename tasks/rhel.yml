@@ -6,7 +6,6 @@
       - mariadb-server
       - mariadb
       - python3-PyMySQL
-  when: ansible_os_family == 'RedHat'
 
 - name: create systemd configuration directory
   file:

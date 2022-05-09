@@ -6,7 +6,6 @@
       - mariadb-server
       - mariadb-client
       - python3-pymysql
-  when: ansible_os_family == 'Debian'
 
 - name: create systemd configuration directory
   file:
