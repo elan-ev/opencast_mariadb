@@ -11,4 +11,10 @@ galaxy_info:
     - name: EL
       version:
         - "8"
+    - name: Debian
+      versions:
+        - bullseye
+    - name: Ubuntu
+      versions:
+        - focal
 dependencies: []

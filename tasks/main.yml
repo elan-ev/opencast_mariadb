@@ -1,10 +1,19 @@
 ---
 - name: Install MariaDB on RedHat Systems
+  when: ansible_os_family == 'RedHat'
   ansible.builtin.dnf:
     name:
       - mariadb-server
       - mariadb
       - python3-PyMySQL
+
+- name: Install MariaDB on Debian Systems
+  when: ansible_os_family == 'Debian'
+  ansible.builtin.apt:
+    name:
+      - mariadb-server
+      - mariadb-client
+      - python3-pymysql
 
 - name: Create systemd configuration directory
   ansible.builtin.file:
@@ -13,6 +22,7 @@
     mode: "0755"
 
 - name: Limit number of open files
+  notify: Restart MariaDB
   ansible.builtin.copy:
     content: |
       [Service]
@@ -20,7 +30,6 @@
     dest: /etc/systemd/system/mariadb.service.d/limits.conf
     mode: "0644"
   register: reload_systemd_daemon
-  notify: Restart MariaDB
 
 - name: Reload systemd daemon  # noqa no-handler
   when: reload_systemd_daemon is changed
@@ -54,13 +63,24 @@
     state: started
     enabled: true
 
-- name: Set MariaDB root user password
+- name: Set MariaDB root user password (RedHat)
+  when: ansible_os_family == 'RedHat'
   community.mysql.mysql_user:
     name: "{{ database_root_user }}"
     password: "{{ database_root_password }}"
     login_user: "{{ database_root_user }}"
     login_password: "{{ database_root_password }}"
     check_implicit_admin: true
+
+- name: Set MariaDB root user password (Debian)
+  when: ansible_os_family == 'Debian'
+  community.mysql.mysql_user:
+    name: "{{ database_root_user }}"
+    password: "{{ database_root_password }}"
+    login_user: "{{ database_root_user }}"
+    login_password: "{{ database_root_password }}"
+    check_implicit_admin: true
+    login_unix_socket: /run/mysqld/mysqld.sock
 
 - name: Create Opencast database user
   community.mysql.mysql_user:
