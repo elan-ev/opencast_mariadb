@@ -1,109 +1,107 @@
 ---
-
-- name: install MariaDB on RedHat Systems
-  dnf:
+- name: Install MariaDB on RedHat Systems
+  ansible.builtin.dnf:
     name:
       - mariadb-server
       - mariadb
       - python3-PyMySQL
 
-- name: create systemd configuration directory
-  file:
+- name: Create systemd configuration directory
+  ansible.builtin.file:
     path: /etc/systemd/system/mariadb.service.d/
     state: directory
-    mode: '0755'
+    mode: "0755"
 
-- name: limit number of open files
-  copy:
+- name: Limit number of open files
+  ansible.builtin.copy:
     content: |
       [Service]
       LimitNOFILE=10000
     dest: /etc/systemd/system/mariadb.service.d/limits.conf
-    mode: '0644'
+    mode: "0644"
   register: reload_systemd_daemon
-  notify: restart MariaDB
+  notify: Restart MariaDB
 
-- name: reload systemd daemon  # noqa no-handler
-  systemd:
-    daemon_reload: true
+- name: Reload systemd daemon  # noqa no-handler
   when: reload_systemd_daemon is changed
+  ansible.builtin.systemd:
+    daemon_reload: true
 
-- name: configure mariadb
-  ini_file:
+- name: Configure mariadb
+  notify: Restart MariaDB
+  ansible.builtin.ini_file:
     dest: /etc/my.cnf.d/opencast.cnf
     section: mysqld
-    option: '{{ item.key }}'
-    value: '{{ item.value }}'
+    option: "{{ item.key }}"
+    value: "{{ item.value }}"
     owner: root
     group: root
-    mode: '0644'
+    mode: "0644"
     state: present
   loop:
     - key: max_connections
-      value: '{{ opencast_mariadb_max_connections }}'
+      value: "{{ opencast_mariadb_max_connections }}"
     - key: innodb_buffer_pool_size
-      value: '{{ opencast_mariadb_innodb_buffer_pool_size }}'
+      value: "{{ opencast_mariadb_innodb_buffer_pool_size }}"
     - key: character_set_server
       value: utf8mb4
     - key: bind-address
-      value: '*'
-  notify: restart MariaDB
+      value: "*"
 
-- name: start MariaDB
-  service:
+- name: Start MariaDB
+  ansible.builtin.systemd:
     name: mariadb
     state: started
     enabled: true
 
-- name: set MariaDB root user password
-  mysql_user:
-    name: '{{ database_root_user }}'
-    password: '{{ database_root_password }}'
-    login_user: '{{ database_root_user }}'
-    login_password: '{{ database_root_password }}'
+- name: Set MariaDB root user password
+  community.mysql.mysql_user:
+    name: "{{ database_root_user }}"
+    password: "{{ database_root_password }}"
+    login_user: "{{ database_root_user }}"
+    login_password: "{{ database_root_password }}"
     check_implicit_admin: true
 
-- name: create Opencast database user
-  mysql_user:
-    name: '{{ database_user_name }}'
-    password: '{{ database_password }}'
-    host: '%'
-    priv: '{{ database_name }}.*:ALL,GRANT'
-    login_user: '{{ database_root_user }}'
-    login_password: '{{ database_root_password }}'
+- name: Create Opencast database user
+  community.mysql.mysql_user:
+    name: "{{ database_user_name }}"
+    password: "{{ database_password }}"
+    host: "%"
+    priv: "{{ database_name }}.*:ALL,GRANT"
+    login_user: "{{ database_root_user }}"
+    login_password: "{{ database_root_password }}"
 
-- name: create Opencast database
-  mysql_db:
-    name: '{{ database_name }}'
+- name: Create Opencast database
+  community.mysql.mysql_db:
+    name: "{{ database_name }}"
     encoding: utf8mb4
     state: present
-    login_user: '{{ database_root_user }}'
-    login_password: '{{ database_root_password }}'
-
+    login_user: "{{ database_root_user }}"
+    login_password: "{{ database_root_password }}"
 
 ## configuration steps to mimic what 'mysql_secure_installation' does:
 
-- name: delete anonymous user
-  mysql_user:
-    user: ''
-    host: '{{ item }}'
+- name: Delete anonymous user
+  community.mysql.mysql_user:
+    user: ""
+    host: "{{ item }}"
     state: absent
-    login_user: '{{ database_root_user }}'
-    login_password: '{{ database_root_password }}'
+    login_user: "{{ database_root_user }}"
+    login_password: "{{ database_root_password }}"
   loop:
-    - 'localhost'
-    - '{{ ansible_fqdn }}'
+    - "localhost"
+    - "{{ ansible_fqdn }}"
   no_log: true
 
-- name: ensure root user can only connect from the local machine
-  mysql_user:
-    user: '{{ database_root_user }}'
-    password: '{{ database_root_password }}'
-    host: '{{ item }}'
-    login_user: '{{ database_root_user }}'
-    login_password: '{{ database_root_password }}'
+- name: Ensure root user can only connect from the local machine
+  community.mysql.mysql_user:
+    user: "{{ database_root_user }}"
+    password: "{{ database_root_password }}"
+    host: "{{ item }}"
+    login_user: "{{ database_root_user }}"
+    login_password: "{{ database_root_password }}"
   loop:
-    - '::1'
-    - 'localhost'
-    - '{{ ansible_fqdn }}'
+    - "::1"
+    - "localhost"
+    - "{{ ansible_fqdn }}"
   no_log: true

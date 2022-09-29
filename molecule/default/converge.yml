@@ -1,11 +1,11 @@
 ---
-- name: converge
+- name: Converge
   hosts: all
   become: true
+  vars:
+    database_password: "1234"
+    database_root_password: "5678"
   tasks:
-    - name: include opencast_mariadb
-      include_role:
+    - name: Include opencast_mariadb
+      ansible.builtin.include_role:
         name: opencast_mariadb
-      vars:
-        - database_password: '1234'
-        - database_root_password: '5678'

@@ -1,5 +1,4 @@
 ---
-
 galaxy_info:
   role_name: opencast_mariadb
   namespace: elan
@@ -7,9 +6,9 @@ galaxy_info:
   description: Install MariaDB for Opencast.
   company: virtUOS
   license: BSD-3-Clause
-  min_ansible_version: 2.09
+  min_ansible_version: "2.09"
   platforms:
     - name: EL
       version:
-        - 8
+        - "8"
 dependencies: []

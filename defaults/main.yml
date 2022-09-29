@@ -1,5 +1,4 @@
 ---
-
 # opencast database name
 database_name: opencast
 # opencast database user
@@ -10,4 +9,4 @@ database_root_user: root
 # mariadb config options
 opencast_mariadb_max_connections: 512
 # set buffer pool size to ~80% of total memory if db runs on its own host
-opencast_mariadb_innodb_buffer_pool_size: '{{ ((ansible_memtotal_mb / 1024) * 0.8) | int }}G'
+opencast_mariadb_innodb_buffer_pool_size: "{{ ((ansible_memtotal_mb / 1024) * 0.8) | int }}G"
