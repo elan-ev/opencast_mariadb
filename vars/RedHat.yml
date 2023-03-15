@@ -1,0 +1,8 @@
+---
+
+mariadb_packages:
+  - mariadb-server
+  - mariadb
+  - python3-PyMySQL
+
+mariadb_configuration_file: /etc/my.cnf.d/opencast.cnf
