@@ -14,11 +14,12 @@ ansible-galaxy collection install community.mysql
 
 ## Role Variables
 
-You have to specify passwords for the opencast user that accesses the database (`database_password`)
-and the database root user (`database_root_password`).
-Note that once you set the password for the root user, you can _not_ change it again with this role.
+You have to specify a password for the opencast user that accesses the database (`database_password`).
 
 Further config options are optional.
+For example, you can optionally specify a password of the database root user (`database_root_password`) in case you 
+provision to an already installed MariaDB instance where a database root user password has already been set and 
+unix_socket authentication has been deactivated.
 Have a look at the [defaults](defaults/main.yml) to see all variables.
 
 ## Example Playbook
@@ -31,7 +32,6 @@ Just add the role to your playbook:
   roles:
     - role: elan.opencast_mariadb
       database_password: '1234'
-      database_root_password: '4567'
 ```
 
 ## Development
