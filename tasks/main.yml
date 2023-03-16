@@ -107,5 +107,7 @@
   community.mysql.mysql_user:
     name: "{{ database_root_user }}"
     plugin: unix_socket
+    login_user: "{{ database_root_user }}"
+    login_password: "{{ database_root_password }}"
     check_implicit_admin: true
     login_unix_socket: /run/mysqld/mysqld.sock
