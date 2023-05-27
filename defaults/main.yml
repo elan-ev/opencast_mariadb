@@ -5,6 +5,8 @@ database_name: opencast
 database_user_name: opencast
 # mariadb root user
 database_root_user: root
+# mariadb root user password
+database_root_password: '4567'
 
 # mariadb config options
 opencast_mariadb_max_connections: 512
