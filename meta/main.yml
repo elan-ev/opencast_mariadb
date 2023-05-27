@@ -9,7 +9,7 @@ galaxy_info:
   min_ansible_version: "2.09"
   platforms:
     - name: EL
-      version:
+      versions:
         - "8"
         - "9"
     - name: Debian
