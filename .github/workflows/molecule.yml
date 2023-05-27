@@ -9,14 +9,34 @@ on:  # yamllint disable-line rule:truthy
 jobs:
   molecule:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - dist: centos
+            release: 8-Stream
+          - dist: debian
+            release: buster
+          - dist: debian
+            release: bullseye
+          - dist: ubuntu
+            release: focal
+          - dist: ubuntu
+            release: jammy
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: install dependencies
         run: pip3 install -r .dev_requirements.txt
 
-      - name: test playbook
-        run: molecule test --driver-name docker
+      - name: create lxc container
+        uses: lkiesow/setup-lxc-container@v1
+        with:
+          dist: ${{ matrix.os.dist }}
+          release: ${{ matrix.os.release }}
+
+      - name: run molecule tests
         env:
           PY_COLORS: '1'
+        run: molecule test

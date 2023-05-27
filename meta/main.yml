@@ -13,8 +13,10 @@ galaxy_info:
         - "8"
     - name: Debian
       versions:
+        - buster
         - bullseye
     - name: Ubuntu
       versions:
         - focal
+        - jammy
 dependencies: []
