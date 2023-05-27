@@ -2,48 +2,18 @@
 dependency:
   name: galaxy
 driver:
-  name: podman
+  name: delegated
+  options:
+    managed: false
+    login_cmd_template: ssh {instance}
+    ansible_connection_options:
+      ansible_connection: ssh
 platforms:
-  - name: oc_mariadb_centos_8
-    image: quay.io/centos/centos:stream8
-    pre_build_image: false
-    command: /sbin/init
-    tmpfs:
-      - /run
-      - /tmp
-    volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:ro
-  - name: oc_mariadb_debian
-    image: docker.io/library/debian:bullseye
-    pre_build_image: false
-    privileged: true
-    command: /sbin/init
-    tmpfs:
-      - /run
-      - /tmp
-    volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:ro
-  - name: oc_mariadb_ubuntu
-    image: docker.io/ubuntu:latest
-    pre_build_image: false
-    privileged: true
-    command: /sbin/init
-    tmpfs:
-      - /run
-      - /tmp
-    volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+  - name: test
 lint: |
   ansible-lint
   yamllint -c .yamllint .
 provisioner:
   name: ansible
-  config_options:
-    defaults:
-      display_skipped_hosts: false
-  inventory:
-    host_vars:
-      centos:
-        ansible_user: ansible
-      ubuntu:
-        ansible_user: ansible
+verifier:
+  name: ansible
