@@ -5,7 +5,8 @@ database_name: opencast
 database_user_name: opencast
 # mariadb root user
 database_root_user: root
-# mariadb root user password
+# mariadb root user password,
+# only used for authentication to a db with an already set root password and disabled unix_socket authentication
 database_root_password: '4567'
 
 # mariadb config options
