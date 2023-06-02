@@ -5,4 +5,4 @@ mariadb_packages:
   - mariadb-client
   - python3-pymysql
 
-mariadb_configuration_file: /etc/mysql/mariadb.conf.d/50-server.cnf
+mariadb_configuration_file: /etc/mysql/mariadb.conf.d/99-opencast.cnf
