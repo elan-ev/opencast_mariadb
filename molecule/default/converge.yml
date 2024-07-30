@@ -1,7 +1,6 @@
 ---
 - name: Converge
   hosts: all
-  become: true
   vars:
     database_password: "1234"
     database_root_password: "5678"

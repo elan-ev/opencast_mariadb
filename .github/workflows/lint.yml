@@ -1,12 +1,12 @@
 ---
-name: molecule
+name: lint
 
 on:  # yamllint disable-line rule:truthy
-  - push
-  - pull_request
+  push:
+  pull_request:
 
 jobs:
-  molecule:
+  lint:
     runs-on: ubuntu-latest
 
     steps:
@@ -18,7 +18,8 @@ jobs:
       - name: Install Ansbile dependencies
         run: ansible-galaxy install -r requirements.yml
 
-      - name: Test playbook
-        run: molecule test
-        env:
-          PY_COLORS: '1'
+      - name: Run yamllint
+        run: yamllint --strict -c .yamllint .
+
+      - name: Run ansible-lint
+        run: ansible-lint

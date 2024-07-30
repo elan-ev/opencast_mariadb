@@ -1,18 +1,41 @@
 ---
+driver:
+  name: containers
 dependency:
   name: galaxy
-driver:
-  name: delegated
-  options:
-    managed: false
-    login_cmd_template: ssh {instance}
-    ansible_connection_options:
-      ansible_connection: ssh
+  enabled: false
 platforms:
-  - name: test
+  - name: opencast_mariadb_el9
+    image: quay.io/centos/centos:stream9
+    pre_build_image: false
+    command: /sbin/init
+    tmpfs:
+      "/tmp": "exec"
+      "/run": "rw,noexec,nosuid,nodev"
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+  - name: opencast_mariadb_debian
+    image: docker.io/debian:stable
+    pre_build_image: false
+    command: /sbin/init
+    tmpfs:
+      "/tmp": "exec"
+      "/run": "rw,noexec,nosuid,nodev"
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+  - name: opencast_mariadb_ubuntu
+    image: docker.io/ubuntu:latest
+    pre_build_image: false
+    command: /sbin/init
+    tmpfs:
+      "/tmp": "exec"
+      "/run": "rw,noexec,nosuid,nodev"
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
 lint: |
+  set -e
+  yamllint --strict -c .yamllint .
   ansible-lint
-  yamllint -c .yamllint .
 provisioner:
   name: ansible
 verifier:

@@ -1,4 +1,8 @@
 ansible
+ansible-core>=2.13.9
 ansible-lint
 yamllint
 molecule
+molecule-plugins
+molecule-plugins[docker]
+molecule-plugins[podman]

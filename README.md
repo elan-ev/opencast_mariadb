@@ -1,5 +1,6 @@
 # Ansible Role to Install MariaDB for Opencast
 
+![lint](https://github.com/elan-ev/opencast_mariadb/actions/workflows/lint.yml/badge.svg)
 ![molecule](https://github.com/elan-ev/opencast_mariadb/actions/workflows/molecule.yml/badge.svg)
 
 Install MariaDB for [Opencast](https://opencast.org/) with [ansible](https://docs.ansible.com/).

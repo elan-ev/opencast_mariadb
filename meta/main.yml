@@ -6,7 +6,7 @@ galaxy_info:
   description: Install MariaDB for Opencast.
   company: virtUOS
   license: BSD-3-Clause
-  min_ansible_version: "2.09"
+  min_ansible_version: "2.13.9"
   platforms:
     - name: EL
       versions:
@@ -20,4 +20,5 @@ galaxy_info:
       versions:
         - focal
         - jammy
+        - noble
 dependencies: []

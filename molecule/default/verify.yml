@@ -1,9 +1,44 @@
 ---
 - name: Verify
   hosts: all
-  gather_facts: false
+  vars:
+    database_password: "1234"
   tasks:
-  - name: Check if MariaDB is active
-    ansible.builtin.command:
-      cmd: systemctl is-active mariadb
-    changed_when: false
+    - name: Check MariaDB socket exists
+      ansible.builtin.wait_for:
+        path: "{{ '/run/mysqld/mysqld.sock' if ansible_os_family == 'Debian' else '/var/lib/mysql/mysql.sock' }}"
+        delay: 1
+        timeout: 10
+
+    - name: Check MariaDB port listening
+      ansible.builtin.wait_for:
+        port: 3306
+        timeout: 10
+
+    - name: Check current user
+      community.mysql.mysql_query:
+        login_host: localhost
+        login_user: opencast
+        login_password: "{{ database_password }}"
+        query: >-
+          SELECT CURRENT_USER() as USER;
+      register: query_current_user
+
+    - name: Fail on invalid user
+      ansible.builtin.fail:
+        msg: User should be "opencast@%" but is {{ query_current_user.query_result.0.0.USER }}
+      when: "'opencast@%' != query_current_user.query_result.0.0.USER"
+
+    - name: Check Opencast table exists
+      community.mysql.mysql_query:
+        login_host: localhost
+        login_user: opencast
+        login_password: "{{ database_password }}"
+        query: >-
+          SHOW DATABASES LIKE "opencast";
+      register: query_databases
+
+    - name: Fail on missing opencast database
+      ansible.builtin.fail:
+        msg: Opencast database does not exist
+      when: "query_databases.rowcount.0 != 1"

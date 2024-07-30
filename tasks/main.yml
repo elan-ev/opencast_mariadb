@@ -38,7 +38,7 @@
 
 - name: Configure mariadb
   notify: Restart MariaDB
-  ansible.builtin.ini_file:
+  community.general.ini_file:
     dest: "{{ '/etc/mysql/mariadb.conf.d/50-server.cnf' if ansible_os_family == 'Debian' else '/etc/my.cnf.d/opencast.cnf' }}"
     section: mysqld
     option: "{{ item.key }}"
@@ -63,10 +63,11 @@
     state: started
     enabled: true
 
-- name: Start MariaDB
+- name: Wait for MariaDB start
   ansible.builtin.wait_for:
-    path: /var/lib/mysql/mysql.sock
+    path: "{{ '/run/mysqld/mysqld.sock' if ansible_os_family == 'Debian' else '/var/lib/mysql/mysql.sock' }}"
     delay: 1
+    timeout: 30
 
 - name: Set MariaDB root user password (RedHat)
   when: ansible_os_family == 'RedHat'
