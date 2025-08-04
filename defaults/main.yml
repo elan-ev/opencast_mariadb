@@ -10,3 +10,14 @@ database_root_user: root
 opencast_mariadb_max_connections: 512
 # set buffer pool size to ~80% of total memory if db runs on its own host
 opencast_mariadb_innodb_buffer_pool_size: "{{ ((ansible_memtotal_mb / 1024) * 0.8) | int }}G"
+
+
+# === Database backup feature (enabled) ===
+database_backup_enabled: false
+database_backup_output_path: None
+database_backup_schedule: "*-*-* 05:00:00"   # Systemd OnCalendar format
+database_backup_keep: 7
+database_backup_dbs: []  # list of databases
+database_backup_owner: backup
+database_backup_group: backup
+database_backup_user: backup

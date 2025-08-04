@@ -132,3 +132,10 @@
     - "localhost"
     - "{{ ansible_fqdn }}"
   no_log: true
+
+###############################################################################
+# database backup
+###############################################################################
+- name: Include backup setup tasks
+  ansible.builtin.include_tasks: backup.yml
+  when: database_backup_enabled

@@ -1,0 +1,71 @@
+---
+- name: Fail if backup enabled but no output path given
+  ansible.builtin.fail:
+    msg: "database_backup_output_path must be set when database_backup_enabled = true"
+  when:
+    - database_backup_enabled
+    - database_backup_output_path | length == 0
+
+- name: Ensure backup OS user exists
+  ansible.builtin.user:
+    name: "{{ database_backup_owner }}"
+    state: present
+    shell: /usr/sbin/nologin
+    system: true
+
+- name: Ensure MariaDB backup user exists for each database
+  community.mysql.mysql_user:
+    name: "{{ database_backup_user }}"
+    password: "{{ database_backup_user_password }}"
+    host: "localhost"
+    priv: "{{ item }}.*:SELECT,LOCK TABLES,SHOW VIEW,EVENT,TRIGGER"
+    state: present
+    login_user: "{{ database_root_user }}"
+    login_password: "{{ database_root_password }}"
+  loop: "{{ database_backup_dbs }}"
+  when: database_backup_enabled
+  no_log: true
+
+- name: Ensure backup output directory exists
+  ansible.builtin.file:
+    path: "{{ database_backup_output_path }}"
+    state: directory
+    owner: "{{ database_backup_owner }}"
+    group: "{{ database_backup_group }}"
+    mode: "0750"
+  when: database_backup_enabled
+
+- name: Install backup script
+  ansible.builtin.template:
+    src: database-backup.sh.j2
+    dest: "{{ database_backup_output_path }}/database-backup.sh"
+    owner: "{{ database_backup_owner }}"
+    group: "{{ database_backup_group }}"
+    mode: "0750"
+  when: database_backup_enabled
+
+- name: Install systemd service unit
+  ansible.builtin.template:
+    src: database-backup.service.j2
+    dest: /etc/systemd/system/database-backup.service
+    mode: "0644"
+  when: database_backup_enabled
+
+- name: Install systemd timer unit
+  ansible.builtin.template:
+    src: database-backup.timer.j2
+    dest: /etc/systemd/system/database-backup.timer
+    mode: "0644"
+  when: database_backup_enabled
+
+- name: Reload systemd daemon (if timers changed)
+  ansible.builtin.systemd:
+    daemon_reload: true
+  when: database_backup_enabled
+
+- name: Ensure backup timer is enabled and running
+  ansible.builtin.systemd:
+    name: database-backup.timer
+    enabled: true
+    state: started
+  when: database_backup_enabled
