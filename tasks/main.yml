@@ -1,19 +1,12 @@
 ---
-- name: Install MariaDB on RedHat Systems
-  when: ansible_os_family == 'RedHat'
-  ansible.builtin.dnf:
-    name:
-      - mariadb-server
-      - mariadb
-      - python3-PyMySQL
+- name: Loading platform variables
+  ansible.builtin.include_vars: "{{ ansible_os_family }}.yml"
+  tags: always
 
-- name: Install MariaDB on Debian Systems
-  when: ansible_os_family == 'Debian'
-  ansible.builtin.apt:
-    name:
-      - mariadb-server
-      - mariadb-client
-      - python3-pymysql
+- name: Install MariaDB
+  ansible.builtin.package:
+    name: "{{ mariadb_packages }}"
+    state: present
 
 - name: Create systemd configuration directory
   ansible.builtin.file:
@@ -39,7 +32,7 @@
 - name: Configure mariadb
   notify: Restart MariaDB
   community.general.ini_file:
-    dest: "{{ '/etc/mysql/mariadb.conf.d/50-server.cnf' if ansible_os_family == 'Debian' else '/etc/my.cnf.d/opencast.cnf' }}"
+    dest: "{{ mariadb_configuration_file }}"
     section: mysqld
     option: "{{ item.key }}"
     value: "{{ item.value }}"
@@ -69,26 +62,6 @@
     delay: 1
     timeout: 30
 
-- name: Set MariaDB root user password (RedHat)
-  when: ansible_os_family == 'RedHat'
-  community.mysql.mysql_user:
-    name: "{{ database_root_user }}"
-    password: "{{ database_root_password }}"
-    login_user: "{{ database_root_user }}"
-    login_password: "{{ database_root_password }}"
-    check_implicit_admin: true
-    login_unix_socket: /var/lib/mysql/mysql.sock
-
-- name: Set MariaDB root user password (Debian)
-  when: ansible_os_family == 'Debian'
-  community.mysql.mysql_user:
-    name: "{{ database_root_user }}"
-    password: "{{ database_root_password }}"
-    login_user: "{{ database_root_user }}"
-    login_password: "{{ database_root_password }}"
-    check_implicit_admin: true
-    login_unix_socket: /run/mysqld/mysqld.sock
-
 - name: Create Opencast database user
   community.mysql.mysql_user:
     name: "{{ database_user_name }}"
@@ -97,6 +70,8 @@
     priv: "{{ database_name }}.*:ALL,GRANT"
     login_user: "{{ database_root_user }}"
     login_password: "{{ database_root_password }}"
+    check_implicit_admin: true
+    login_unix_socket: "{{ mariadb_socket_path }}"
 
 - name: Create Opencast database
   community.mysql.mysql_db:
@@ -105,30 +80,32 @@
     state: present
     login_user: "{{ database_root_user }}"
     login_password: "{{ database_root_password }}"
+    check_implicit_admin: true
+    login_unix_socket: "{{ mariadb_socket_path }}"
 
-## configuration steps to mimic what 'mysql_secure_installation' does:
+## some configuration steps to mimic what 'mysql_secure_installation' does:
 
 - name: Delete anonymous user
   community.mysql.mysql_user:
     user: ""
-    host: "{{ item }}"
+    host_all: true
     state: absent
     login_user: "{{ database_root_user }}"
     login_password: "{{ database_root_password }}"
-  loop:
-    - "localhost"
-    - "{{ ansible_fqdn }}"
-  no_log: true
+    check_implicit_admin: true
+    login_unix_socket: "{{ mariadb_socket_path }}"
 
 - name: Ensure root user can only connect from the local machine
-  community.mysql.mysql_user:
-    user: "{{ database_root_user }}"
-    password: "{{ database_root_password }}"
-    host: "{{ item }}"
+  community.mysql.mysql_query:
+    query:
+      - DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1')
     login_user: "{{ database_root_user }}"
     login_password: "{{ database_root_password }}"
-  loop:
-    - "::1"
-    - "localhost"
-    - "{{ ansible_fqdn }}"
-  no_log: true
+    login_unix_socket: "{{ mariadb_socket_path }}"
+
+- name: Ensure unix socket as login method for root user
+  community.mysql.mysql_user:
+    name: "{{ database_root_user }}"
+    plugin: unix_socket
+    check_implicit_admin: true
+    login_unix_socket: "{{ mariadb_socket_path }}"
