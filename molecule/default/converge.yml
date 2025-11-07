@@ -7,4 +7,4 @@
   tasks:
     - name: Include opencast_mariadb
       ansible.builtin.include_role:
-        name: opencast_mariadb
+        name: elan.opencast_mariadb

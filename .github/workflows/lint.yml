@@ -22,4 +22,4 @@ jobs:
         run: yamllint --strict -c .yamllint .
 
       - name: Run ansible-lint
-        run: ansible-lint
+        run: ansible-lint --strict --show-relpath .
