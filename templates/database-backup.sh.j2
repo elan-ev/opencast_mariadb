@@ -4,19 +4,19 @@ DBUSER="{{ database_backup_user }}"
 DBPASS="{{ database_backup_user_password }}"
 OUTDIR="{{ database_backup_output_path }}"
 KEEP={{ database_backup_keep }}
-DBS=({% for db in database_backup_dbs %}{{ db }} {% endfor %})
+DBS=({{ database_backup_dbs | join(' ') }})
 TS=$(date +%Y%m%d-%H%M%S)
 
 # Loop through each database name
 for DB in "${DBS[@]}"; do
-  echo "Backing up $DB → $OUTDIR/db-backup-${DB}-${TS}.dump.gz"
+  echo "Backing up $DB database to $OUTDIR/db-backup-${DB}-${TS}.sql.gz"
 
   # Run pg_dump and compress into a .gz file
-  mysqldump -F c "$DBUSER" -p"$DBPASS" \
-    | gzip > "${OUTDIR}/db-backup-${DB}-${TS}.dump.gz"
+  mysqldump -u "$DBUSER" -p"$DBPASS" "$DB" \
+    | gzip > "${OUTDIR}/db-backup-${DB}-${TS}.sql.gz"
 
   # Remove older dumps, keep only the newest $KEEP
-  ls -1t "${OUTDIR}/db-backup-${DB}-"*.dump.gz \
+  ls -1t "${OUTDIR}/db-backup-${DB}-"*.sql.gz \
     | tail -n +$((KEEP + 1)) \
     | xargs -r rm --
 done

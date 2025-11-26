@@ -13,11 +13,14 @@ opencast_mariadb_innodb_buffer_pool_size: "{{ ((ansible_memtotal_mb / 1024) * 0.
 
 
 # === Database backup feature (enabled) ===
-database_backup_enabled: false
-database_backup_output_path: None
+database_backup_enabled: true
+database_backup_output_path: "/bckup/"
 database_backup_schedule: "*-*-* 05:00:00"   # Systemd OnCalendar format
 database_backup_keep: 7
-database_backup_dbs: []  # list of databases
-database_backup_owner: backup
-database_backup_group: backup
+# list of databases
+database_backup_dbs:
+  # - "{{ opencast }}"
+    - "opencast"
+database_backup_owner: mariadbbackup
+database_backup_group: mariadbbackup
 database_backup_user: backup

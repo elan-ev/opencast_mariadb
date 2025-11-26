@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# Usage: ./database-restore.sh <database_name> <backup_file>
+
+DB_NAME=$1
+BACKUP_FILE=$2
+
+if [ -z "$DB_NAME" ] || [ -z "$BACKUP_FILE" ]; then
+  echo "Usage: $0 <database_name> <backup_file>"
+  exit 1
+fi
+
+if [ ! -f "$BACKUP_FILE" ]; then
+  echo "Error: Backup file $BACKUP_FILE does not exist."
+  exit 2
+fi
+
+DB_USER="{{ database_root_user }}"
+DB_PASS="{{ database_root_password }}"
+
+echo "Restoring database $DB_NAME from $BACKUP_FILE..."
+
+# Drop and recreate the database
+mysql -u"$DB_USER" -p"$DB_PASS" -e "DROP DATABASE IF EXISTS \`$DB_NAME\`; CREATE DATABASE \`$DB_NAME\`;"
+
+# Import the backup file
+if [[ "$BACKUP_FILE" == *.gz ]]; then
+  gunzip -c "$BACKUP_FILE" | mysql -u"$DB_USER" "-p$DB_PASS" "$DB_NAME"
+else
+  mysql -u"$DB_USER" "-p$DB_PASS" "$DB_NAME" < "$BACKUP_FILE"
+fi
+
+
+if [ $? -eq 0 ]; then
+  echo "Restore completed successfully."
+else
+  echo "Restore failed."
+  exit 3
+fi

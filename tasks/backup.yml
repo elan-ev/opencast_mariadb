@@ -10,15 +10,17 @@
   ansible.builtin.user:
     name: "{{ database_backup_owner }}"
     state: present
-    shell: /usr/sbin/nologin
     system: true
+  when:
+    - database_backup_enabled
+    - database_backup_user != "root"
 
 - name: Ensure MariaDB backup user exists for each database
   community.mysql.mysql_user:
     name: "{{ database_backup_user }}"
     password: "{{ database_backup_user_password }}"
     host: "localhost"
-    priv: "{{ item }}.*:SELECT,LOCK TABLES,SHOW VIEW,EVENT,TRIGGER"
+    priv: "{{ item }}.*:SELECT,LOCK TABLES,SHOW VIEW,TRIGGER"
     state: present
     login_user: "{{ database_root_user }}"
     login_password: "{{ database_root_password }}"
@@ -50,6 +52,7 @@
     dest: /etc/systemd/system/database-backup.service
     mode: "0644"
   when: database_backup_enabled
+  register: database_backup_service_unit
 
 - name: Install systemd timer unit
   ansible.builtin.template:
@@ -57,15 +60,28 @@
     dest: /etc/systemd/system/database-backup.timer
     mode: "0644"
   when: database_backup_enabled
+  register: database_backup_timer_unit
 
 - name: Reload systemd daemon (if timers changed)
   ansible.builtin.systemd:
     daemon_reload: true
-  when: database_backup_enabled
+  when:
+    - database_backup_enabled
+    - database_backup_service_unit.changed or database_backup_timer_unit.changed
 
 - name: Ensure backup timer is enabled and running
   ansible.builtin.systemd:
     name: database-backup.timer
     enabled: true
     state: started
+  when: database_backup_enabled
+
+  # Restore database
+- name: Install restore script
+  ansible.builtin.template:
+    src: database-restore.sh.j2
+    dest: "{{ database_backup_output_path }}/database-restore.sh"
+    owner: "{{ database_backup_owner }}"
+    group: "{{ database_backup_group }}"
+    mode: "0750"
   when: database_backup_enabled

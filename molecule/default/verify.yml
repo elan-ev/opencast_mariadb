@@ -71,6 +71,7 @@
             fail_msg: >
               Backup directory {{ database_backup_output_path }}
               is missing or not a directory.
+
         - name: Check database-backup.service is installed and enabled
           ansible.builtin.systemd:
             name: database-backup.service
