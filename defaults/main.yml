@@ -20,7 +20,6 @@ database_backup_keep: 7
 # list of databases
 database_backup_dbs:
   - "{{ database_name }}"
-    
 database_backup_owner: mariadbbackup
 database_backup_group: mariadbbackup
 database_backup_user: backup
