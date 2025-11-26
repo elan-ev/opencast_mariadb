@@ -67,28 +67,14 @@ When enabled, backups are written as compressed dumps:
 
 ### Backup variables
 
-- `database_backup_enabled` (default: `false`)
-  - Enable/disable the backup feature.
-
-- `database_backup_output_path` (default: empty)
-  - **Required when** `database_backup_enabled: true`.
-  - Directory where the scripts and backup files are stored (e.g. `/var/backups/mariadb`).
-
-- `database_backup_schedule` (default: `*-*-* 05:00:00`)
-  - systemd `OnCalendar` schedule for the timer.
-
+- `database_backup_enabled` (default: `false`) - Enable/disable the backup feature.
+- `database_backup_output_path` (default: empty) - **Required when** `database_backup_enabled: true`.Directory where the scripts and backup files are stored (e.g. `/var/backups/mariadb`).
+- `database_backup_schedule` (default: `*-*-* 05:00:00`) - systemd `OnCalendar` schedule for the timer.
 - `database_backup_keep` (default: `7`)
   - Number of newest backups to keep **per database**. Older dumps are removed.
-
-- `database_backup_dbs`
-  - List of database names to back up (e.g. `["opencast"]`).
-
-- `database_backup_owner` / `database_backup_group`
-  - OS user/group that owns `database_backup_output_path` and the scripts.
-
-- `database_backup_user` / `database_backup_user_password`
-  - MariaDB user/password used by the backup script (`mysqldump`).
-  - Should have read-only style privileges required for backups (e.g. `SELECT, LOCK TABLES, SHOW VIEW, EVENT, TRIGGER`).
+- `database_backup_dbs`- List of database names to back up (e.g. `["opencast"]`).
+- `database_backup_owner` / `database_backup_group`- OS user/group that owns `database_backup_output_path` and the scripts.
+- `database_backup_user` / `database_backup_user_password`- MariaDB user/password used by the backup script.
 
 ### Restore script
 
@@ -98,7 +84,7 @@ It is meant to be used manually when you really want to restore a dump.
 Usage:
 ```bash
 <database_backup_output_path>/database-restore.sh <database_name> <backup_file>
-
+```
 ## License
 
 [BSD-3-Clause](LICENSE)
