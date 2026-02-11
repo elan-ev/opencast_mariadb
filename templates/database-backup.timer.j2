@@ -1,0 +1,9 @@
+[Unit]
+Description=Run database backup daily
+
+[Timer]
+OnCalendar={{ database_backup_schedule }}
+Persistent=true
+
+[Install]
+WantedBy=timers.target

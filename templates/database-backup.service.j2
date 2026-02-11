@@ -1,0 +1,14 @@
+[Unit]
+Description=Opencast Database Backup
+After=network.target
+After=local-fs.target
+After=remote-fs.target
+
+[Service]
+Type=oneshot
+User={{ database_backup_owner }}    
+Group={{ database_backup_group }} 
+ExecStart={{ database_backup_output_path }}/database-backup.sh
+
+[Install]
+WantedBy=multi-user.target
