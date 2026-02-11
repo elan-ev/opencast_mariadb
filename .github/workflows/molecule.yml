@@ -18,6 +18,11 @@ jobs:
       - name: Install Ansbile dependencies
         run: ansible-galaxy install -r requirements.yml
 
+        # ansible-lint will generate .ansible/roles directory and dynamic link this role to it
+        # we then can import this role by <namespace>.<name> for testing
+      - name: Run ansible-lint
+        run: ansible-lint --strict --show-relpath .
+
       - name: Test playbook
         run: molecule test
         env:
