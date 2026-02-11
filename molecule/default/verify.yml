@@ -52,12 +52,6 @@
     - name: Verify backup configuration when enabled
       when: database_backup_enabled | default(false)
       block:
-        - name: Assert backups are enabled
-          ansible.builtin.assert:
-            that:
-              - database_backup_enabled | default(false)
-            fail_msg: "Backups are disabled; skipping backup verification."
-
         - name: Ensure backup directory exists
           ansible.builtin.stat:
             path: "{{ database_backup_output_path }}"
